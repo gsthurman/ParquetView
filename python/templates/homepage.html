@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>ParquetView</title>
+  </head>
+  <style>
+    #numRows, #minRow, #maxRow {
+      margin-right: 20px; /* Adjust as needed */
+    }
+  
+    #minRow, #maxRow {
+      width: 80px; /* Adjust as needed */
+    }
+  </style>
+  <body>
+    <h1>ParquetView</h1>
+    <p>ParquetView is a tool for viewing Apache Parquet files.</p>
+    <div> 
+        <label id="fileSelectForm" class="label-file">
+          Choose File
+          <input type="file" id="fileSelection" name="file" accept=".parquet" onchange="document.getElementById('fileName').textContent = this.files[0].name">
+        </label>
+        <span id="fileName"></span>
+    </div>
+    <br>
+    <div id="options">
+      <span id="numRows"></span>
+      <label for="minRow">min row:</label>
+      <input type="number" id="minRow" name="minRow" value="0">
+      <label for="maxRow">max row:</label>
+      <input type="number" id="maxRow" name="maxRow" value="10">
+      <button id="reloadButton">Reload</button>
+    </div>
+    <div id="dataContainer">
+    </div>
+    <script>
+      document.getElementById("options").style.display = "none";
+      document.getElementById("fileSelectForm").addEventListener("change", function(event) {
+        event.preventDefault();
+        // show the options
+        document.getElementById("options").style.display = "block";
+        load_parquet();
+      })
+      document.getElementById("reloadButton").addEventListener("click", function(event) {
+        event.preventDefault();
+        load_parquet();
+      })
+
+      function load_parquet() {
+        const dataContainer = document.getElementById("dataContainer");
+        dataContainer.innerHTML = "data loading...";
+        const fileSelection = document.getElementById("fileSelection").files[0];
+        const minRow = document.getElementById("minRow").value;
+        const maxRow = document.getElementById("maxRow").value;
+
+        const formData = new FormData();
+        formData.append("file", fileSelection);
+        formData.append("minRow", minRow);
+        formData.append("maxRow", maxRow);
+
+        fetch("/load_parquet", {
+          method: "POST",
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            dataContainer.innerHTML = data.error;
+            return;
+          } else {
+            document.getElementById("numRows").innerHTML = `total rows: ${data.num_rows} `;
+            dataContainer.innerHTML = data.data_html;
+          }
+        })
+        .catch(error => {
+          console.error("Error:", error);
+        });
+      }
+    </script>
+  </body>
+</html>
