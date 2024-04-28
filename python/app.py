@@ -6,8 +6,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template('homepage.html')
-    # return "Hello World!"
+    return render_template('parquet_view.html')
 
 @app.route('/load_parquet', methods=['POST'])
 def load_parquet():
