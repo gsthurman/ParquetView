@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start Flask app
-cd ./python
+cd ./flask
 python app.py &
 FLASK_APP_PID=$!
 
